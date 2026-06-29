@@ -30,6 +30,7 @@ export default function ChatScreen({ route }: any) {
         .from('messages')
         .select('*')
         .eq('inquiry_id', inquiryId)
+        .eq('channel', 'buyer')
         .order('created_at', { ascending: true });
       if (active) {
         setMessages(data || []);
@@ -45,6 +46,7 @@ export default function ChatScreen({ route }: any) {
         { event: 'INSERT', schema: 'public', table: 'messages', filter: `inquiry_id=eq.${inquiryId}` },
         (payload) => {
           const msg = payload.new as Message;
+          if ((msg as any).channel && (msg as any).channel !== 'buyer') return;
           setMessages(prev => (prev.some(m => m.id === msg.id) ? prev : [...prev, msg]));
         }
       )
@@ -71,7 +73,7 @@ export default function ChatScreen({ route }: any) {
 
     const { data, error } = await supabase
       .from('messages')
-      .insert({ inquiry_id: inquiryId, sender_id: session.user.id, sender_role: 'buyer', body })
+      .insert({ inquiry_id: inquiryId, sender_id: session.user.id, sender_role: 'buyer', channel: 'buyer', body })
       .select()
       .single();
 
