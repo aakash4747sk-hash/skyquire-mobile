@@ -20,8 +20,22 @@ function timeAgo(dateStr: string) {
   return `${days}d ago`;
 }
 
+const offerMeta: Record<string, { color: string; bg: string }> = {
+  Submitted: { color: '#0369a1', bg: '#e0f2fe' },
+  Reviewing: { color: '#92400e', bg: '#fef3c7' },
+  Countered: { color: '#5b21b6', bg: '#ede9fe' },
+  Accepted: { color: '#166534', bg: '#dcfce7' },
+  Declined: { color: '#991b1b', bg: '#fee2e2' },
+  Withdrawn: { color: '#475569', bg: '#f1f5f9' },
+};
+const structureLabels: Record<string, string> = {
+  all_cash: 'All cash', cash_plus_earnout: 'Cash + earn-out', equity_swap: 'Equity swap',
+  asset_purchase: 'Asset purchase', other: 'Other',
+};
+
 export default function InquiriesScreen({ navigation }: any) {
   const [inquiries, setInquiries] = useState<any[]>([]);
+  const [offers, setOffers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useFocusEffect(useCallback(() => {
@@ -38,14 +52,47 @@ export default function InquiriesScreen({ navigation }: any) {
       .eq('user_id', session.user.id)
       .order('created_at', { ascending: false });
     setInquiries(data || []);
+    const { data: off } = await supabase
+      .from('offers')
+      .select('*')
+      .eq('user_id', session.user.id)
+      .order('created_at', { ascending: false });
+    setOffers(off || []);
     setLoading(false);
   }
+
+  const OffersHeader = offers.length === 0 ? null : (
+    <View style={{ marginBottom: 16 }}>
+      <Text style={styles.sectionLabel}>MY OFFERS</Text>
+      {offers.map((o) => {
+        const m = offerMeta[o.status] || offerMeta.Submitted;
+        return (
+          <View key={o.id} style={styles.card}>
+            <View style={styles.cardTop}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.listingName}>{o.listing_name || 'Business'}</Text>
+                <Text style={styles.timeAgo}>Offered {timeAgo(o.created_at)}</Text>
+              </View>
+              <View style={[styles.statusBadge, { backgroundColor: m.bg }]}>
+                <Text style={[styles.statusText, { color: m.color }]}>{o.status}</Text>
+              </View>
+            </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <Text style={styles.offerAmount}>₹{o.amount_cr} Cr</Text>
+              <View style={styles.structChip}><Text style={styles.structChipText}>{structureLabels[o.structure] || o.structure}</Text></View>
+              {o.timeline ? <Text style={styles.timeAgo}>· {o.timeline}</Text> : null}
+            </View>
+          </View>
+        );
+      })}
+    </View>
+  );
 
   if (loading) return <View style={styles.center}><ActivityIndicator color="#7c3aed" /></View>;
 
   return (
     <View style={styles.container}>
-      {inquiries.length === 0 ? (
+      {inquiries.length === 0 && offers.length === 0 ? (
         <View style={styles.empty}>
           <Text style={styles.emptyIcon}>📭</Text>
           <Text style={styles.emptyTitle}>No inquiries yet</Text>
@@ -60,23 +107,31 @@ export default function InquiriesScreen({ navigation }: any) {
           keyExtractor={item => item.id}
           contentContainerStyle={{ padding: 16 }}
           ListHeaderComponent={
-            <View style={styles.statsRow}>
-              <View style={styles.statCard}>
-                <Text style={styles.statNum}>{inquiries.length}</Text>
-                <Text style={styles.statLabel}>Total</Text>
-              </View>
-              <View style={styles.statCard}>
-                <Text style={[styles.statNum, { color: '#0369a1' }]}>
-                  {inquiries.filter(i => !['Closed', 'Declined'].includes(i.status)).length}
-                </Text>
-                <Text style={styles.statLabel}>Active</Text>
-              </View>
-              <View style={styles.statCard}>
-                <Text style={[styles.statNum, { color: '#16a34a' }]}>
-                  {inquiries.filter(i => i.status === 'Closed').length}
-                </Text>
-                <Text style={styles.statLabel}>Closed</Text>
-              </View>
+            <View>
+              {OffersHeader}
+              {inquiries.length > 0 && (
+                <>
+                  <Text style={styles.sectionLabel}>MY INQUIRIES</Text>
+                  <View style={styles.statsRow}>
+                    <View style={styles.statCard}>
+                      <Text style={styles.statNum}>{inquiries.length}</Text>
+                      <Text style={styles.statLabel}>Total</Text>
+                    </View>
+                    <View style={styles.statCard}>
+                      <Text style={[styles.statNum, { color: '#0369a1' }]}>
+                        {inquiries.filter(i => !['Closed', 'Declined'].includes(i.status)).length}
+                      </Text>
+                      <Text style={styles.statLabel}>Active</Text>
+                    </View>
+                    <View style={styles.statCard}>
+                      <Text style={[styles.statNum, { color: '#16a34a' }]}>
+                        {inquiries.filter(i => i.status === 'Closed').length}
+                      </Text>
+                      <Text style={styles.statLabel}>Closed</Text>
+                    </View>
+                  </View>
+                </>
+              )}
             </View>
           }
           renderItem={({ item }) => {
@@ -139,4 +194,8 @@ const styles = StyleSheet.create({
   btnRow: { flexDirection: 'row', gap: 8 },
   chatBtn: { backgroundColor: '#7c3aed', borderColor: '#7c3aed' },
   chatBtnText: { fontSize: 13, color: '#fff', fontWeight: '600' },
+  sectionLabel: { fontSize: 12, fontWeight: '700', color: '#64748b', letterSpacing: 0.5, marginBottom: 8, marginTop: 4 },
+  offerAmount: { fontSize: 18, fontWeight: '800', color: '#0f172a' },
+  structChip: { backgroundColor: '#f1f5f9', borderRadius: 12, paddingHorizontal: 8, paddingVertical: 3 },
+  structChipText: { fontSize: 11, color: '#475569' },
 });
