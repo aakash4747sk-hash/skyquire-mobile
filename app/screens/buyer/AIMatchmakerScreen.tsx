@@ -7,7 +7,8 @@ import { supabase } from '../../lib/supabase';
 
 type Message = { role: 'user' | 'assistant'; content: string };
 
-const ARIA_URL = 'https://skyquire-app.vercel.app/api/ai/onboarding';
+import { API_BASE_URL } from '../../lib/config';
+const ARIA_URL = `${API_BASE_URL}/api/ai/onboarding`;
 
 export default function AIMatchmakerScreen() {
   const [messages, setMessages] = useState<Message[]>([]);

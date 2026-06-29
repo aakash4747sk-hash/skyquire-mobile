@@ -5,7 +5,8 @@ import {
 } from 'react-native';
 import { supabase } from '../../lib/supabase';
 
-const AI_URL = 'https://skyquire-app.vercel.app/api/ai/analyze';
+import { API_BASE_URL } from '../../lib/config';
+const AI_URL = `${API_BASE_URL}/api/ai/analyze`;
 
 const STAGE_COLORS: Record<string, string> = {
   Prospect: '#94a3b8', Engaged: '#0ea5e9',

@@ -5,7 +5,8 @@ import {
 import { useFocusEffect } from '@react-navigation/native';
 import { supabase } from '../../lib/supabase';
 
-const MATCH_URL = 'https://skyquire-app.vercel.app/api/ai/match';
+import { API_BASE_URL } from '../../lib/config';
+const MATCH_URL = `${API_BASE_URL}/api/ai/match`;
 
 type Match = {
   listing_id: string;
