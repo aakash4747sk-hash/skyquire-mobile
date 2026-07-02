@@ -38,7 +38,10 @@
     "extra": {
       "eas": {
         "projectId": "b22ad4e7-ab95-4f67-8b15-d0dcd992071d"
-      }
+      },
+      "supabaseUrl": "https://msqxigcfbsqwpbntxqfe.supabase.co",
+      "supabaseAnonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1zcXhpZ2NmYnNxd3BibnR4cWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA3NjY2NDUsImV4cCI6MjA5NjM0MjY0NX0.pX7luSuolqSqxjofF1ZFZCu4pABi2vIN2x4lkMtx5ek",
+      "apiBaseUrl": "https://skyquire-app.vercel.app"
     },
     "owner": "aakash4747s-team",
     "runtimeVersion": {
